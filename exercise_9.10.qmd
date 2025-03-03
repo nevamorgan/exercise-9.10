@@ -127,7 +127,6 @@ execute:
            caption = "Based on daily air quality measurements in New York, May to September 1973. Graph Created By: Neva Morgan",
            subtitle = paste("Correlation:", round(cor(predicted$Ozone, predicted$.fitted),2))) +
        ggthemes::theme_stata()
-
     ```
 
 <!-- -->
