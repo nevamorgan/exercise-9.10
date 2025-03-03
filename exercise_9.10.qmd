@@ -1,0 +1,139 @@
+---
+title: "Daily Exercise 9/10"
+author: "Neva Morgan"
+date: "2025-03-02"
+format: html
+execute:
+  echo: true
+---
+
+## Data Cleaning Using the airquality R Dataset
+
+1.  Use the help (?) function to learn more about the dataset
+
+    -   The help tab told me that this data contains 153 rows of data with 6 variables: Ozone (ppb), Solar Radiation (lang), Wind (mph), Temperature (F), Month (1-12), and the day of the month (1-31).
+
+    -   The purpose of this data was to take air quality measuremenets based on the parameters above from New York, U.S., from May 1st to September 30th in 1973.
+
+    -   They also clarified that the variables of Ozone, Solar Radiation, Wind, and Temp were located at certain parts within the state:
+
+        -   `Ozone`: Mean ozone in parts per billion from 1300 to 1500 hours at Roosevelt Island
+
+        -   `Solar.R`: Solar radiation in Langleys in the frequency band 4000–7700 Angstroms from 0800 to 1200 hours at Central Park
+
+        -   `Wind`: Average wind speed in miles per hour at 0700 and 1000 hours at LaGuardia Airport
+
+        -   `Temp`: Maximum daily temperature in degrees Fahrenheit at LaGuardia Airport.
+
+    -   This data was obtained by the New York State Department of Conservation for the ozone data, and the National Weather Service for meteorological data.
+
+    -   The airquality data also had a citation for a reference:
+
+        -   Chambers, J. M., Cleveland, W. S., Kleiner, B. and Tukey, P. A. (1983) *Graphical Methods for Data Analysis*. Belmont, CA: Wadsworth.
+
+        -   Which is a reference for data methods that can be applied to statistical analysis situations.
+
+2.  Use `vis_dat` to check out the data. Does it need cleaning?
+
+    ```{r}
+    library(dplyr)
+    library(tidyr)
+    library(tidyverse)
+    library(ggplot2)
+    library(visdat)
+
+    data <- airquality
+
+    vis_dat(airquality)
+    ```
+
+    \^Yes this data needs cleaning!
+
+    ```{r}
+    data <- airquality 
+
+    vis_miss(data)
+    vis_cor(data)
+    vis_guess(data)
+    ```
+
+    ```{r}
+    library(visdat)
+
+    data <- airquality %>%
+      mutate(Wind = mean(Wind, na.rm = TRUE))
+
+    data <- airquality %>%
+      distinct()
+
+    data <- airquality %>%
+      drop_na()
+
+    vis_miss(data)
+    vis_cor(data)
+    vis_guess(data)
+    ```
+
+3.  Fit a linear model to the cleaned data to predict `Ozone` from one of the possible predictors of your choosing. Why did you chose that variable?
+
+    ```{r}
+    library(visdat)
+
+    data <- airquality |>
+      drop_na()
+
+    (model <- lm(Ozone ~ Solar.R, data = data))
+    ```
+
+    \^ I chose solar radiation as the predictor variable for the linear model, because as the ozone layer of our atmosphere changes, solar radiation will be altered by it's level of presence. Ultimately any of the variables would be altered by the level of the ozone layer, but I thought solar radiation would be the most impacted.
+
+    -   Lower ozone level would the increase the amount of solar radiation trapped between the atmosphere and the Earth's surface.
+
+    -   Higher ozone level would decrease the amount of solar radiation trapped between the atmosphere and the Earth's surface.
+
+4.  Using `summary()`, Does this seem like a valid model?
+
+    ```{r}
+    summary(model)
+    ```
+
+    \^ Not really, it could look clearer and be actually plotted on a graph.
+
+5.  Explain the R^2^ found in a sentence.
+
+    -   The R^2^ expression displays that the solar radiation points have a proportioned variance of 0.1213; meaning that the data plotted is not linear as it's R^2^ value is closer to 0 than 1.
+
+6.  Use `broom::augment` to predict the Ozone of the cleaned data
+
+    ```{r}
+    library(broom)
+
+    predicted <- augment(model, data)
+    print(predicted)
+    ```
+
+7.  Use `ggplot` to plot the actual vs predicted Ozone
+
+    ```{r}
+    library(ggplot2)
+
+    ggplot(data = predicted,
+           aes(x = Solar.R, y = Ozone)) +
+      geom_point() +
+      geom_abline(intercept = 0, slope = 1, color = "red") +
+       labs(title = "Predicted vs. Actual Ozone Level in 1973",
+           x = "Solar Radiation (lang)",
+           y = "Ozone Level (ppb)",
+           caption = "Based on daily air quality measurements in New York, May to September 1973. Graph Created By: Neva Morgan",
+           subtitle = paste("Correlation:", round(cor(predicted$Ozone, predicted$.fitted),2))) +
+       ggthemes::theme_stata()
+
+    ```
+
+<!-- -->
+
+a.  Add a red line to show where the actual and predicted values are equal This can be done by plotting a 1:1 line (e.g. intercept 0, slope 1) with `geom_abline(intercept = 0, slope = 1, color = "red")`
+
+b.  Add a subtitle to the plot showing the correlation between the actual and predicted values are equal This can be done by plotting a 1:1 line (e.g. intercept 0, slope 1) with
+
+c.  `paste("Correlation:", round(cor(a$Ozone, a$.fitted),2))` assuming your augmented data object is called `a`
